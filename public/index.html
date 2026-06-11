@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#E5001A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>A10D — Attendance Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ LANDING ═══════════════════════════════════ -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-bg">
+    <div class="grid-overlay"></div>
+    <div class="red-glow"></div>
+  </div>
+  <div class="landing-content">
+    <div class="logo-block">
+      <div class="logo-mark">
+        <span class="logo-a">A</span><span class="logo-10">10</span><span class="logo-d">D</span>
+      </div>
+      <p class="tagline">Attendance that exists for a moment,<br>then disappears.</p>
+      <div class="tagline-sub">No accounts. No data. No proxies.</div>
+    </div>
+
+    <div class="role-cards">
+      <button class="role-card role-teacher" onclick="App.goTo('teacher-start')">
+        <div class="role-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <path d="M8 21h8M12 17v4"/>
+          </svg>
+        </div>
+        <div class="role-label">Teacher</div>
+        <div class="role-desc">Start a session &amp; monitor attendance live</div>
+        <div class="role-arrow">→</div>
+      </button>
+
+      <button class="role-card role-student" onclick="App.goTo('student-entry')">
+        <div class="role-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+            <path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <div class="role-label">Student</div>
+        <div class="role-desc">Enter session code &amp; mark attendance</div>
+        <div class="role-arrow">→</div>
+      </button>
+    </div>
+
+    <div class="landing-footer">
+      <span class="ephemeral-badge">
+        <span class="dot-pulse"></span>
+        Ephemeral · Zero Persistence · Privacy-First
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TEACHER START ═════════════════════════════════ -->
+<div id="screen-teacher-start" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="App.goTo('landing')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="screen-title">Teacher Session</span>
+  </div>
+
+  <div class="screen-body">
+    <div class="info-card">
+      <div class="info-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E5001A" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+      </div>
+      <div>
+        <div class="info-title">How it works</div>
+        <div class="info-text">A unique 6-character code is generated. Students enter this code to mark attendance. All data is purged when you end the session.</div>
+      </div>
+    </div>
+
+    <button class="btn-primary btn-full btn-xl" id="btn-start-session" onclick="Teacher.startSession()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start Attendance Session
+    </button>
+
+    <div class="privacy-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Session auto-expires after 30 minutes. No data is stored permanently.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TEACHER DASHBOARD ════════════════════════════ -->
+<div id="screen-teacher-dashboard" class="screen">
+  <div class="screen-header dashboard-header">
+    <div class="session-code-display">
+      <span class="code-label">SESSION CODE</span>
+      <span class="code-value" id="display-code">------</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="Teacher.copyCode()" title="Copy code">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="screen-body dashboard-body">
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-num" id="stat-count">0</span>
+        <span class="stat-label">Present</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" id="stat-gps">0</span>
+        <span class="stat-label">GPS ✓</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num" id="stat-cam">0</span>
+        <span class="stat-label">Camera ✓</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="live-badge">
+          <span class="live-dot"></span>LIVE
+        </span>
+        <span class="stat-label">Polling</span>
+      </div>
+    </div>
+
+    <!-- Action row -->
+    <div class="action-row">
+      <button class="btn-secondary btn-sm" onclick="Teacher.openAddModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </button>
+      <button class="btn-secondary btn-sm" onclick="Teacher.exportCSV()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
+      <button class="btn-secondary btn-sm" onclick="Teacher.shareAttendance()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+      <button class="btn-danger btn-sm" onclick="Teacher.endSession()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        End
+      </button>
+    </div>
+
+    <!-- Attendance table -->
+    <div class="table-wrapper">
+      <div class="table-scroll">
+        <table class="attendance-table" id="attendance-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Roll No.</th>
+              <th>Mobile</th>
+              <th>GPS</th>
+              <th>Cam</th>
+              <th>Time</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="attendance-tbody">
+            <tr class="empty-row" id="empty-row">
+              <td colspan="8">
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                  </div>
+                  <p>Waiting for students…</p>
+                  <p class="empty-sub">Share code <strong id="empty-code">------</strong> with your class</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ STUDENT ENTRY ═════════════════════════════════ -->
+<div id="screen-student-entry" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="App.goTo('landing')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <span class="screen-title">Mark Attendance</span>
+  </div>
+
+  <div class="screen-body">
+    <!-- Timer -->
+    <div class="timer-block" id="timer-block" style="display:none">
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" width="80" height="80" viewBox="0 0 80 80">
+          <circle class="timer-track" cx="40" cy="40" r="34"/>
+          <circle class="timer-progress" id="timer-circle" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-text" id="timer-display">2:00</div>
+      </div>
+      <div class="timer-label">Time remaining to submit</div>
+    </div>
+
+    <!-- Code entry -->
+    <div class="form-card" id="card-code">
+      <label class="field-label">Session Code</label>
+      <div class="code-input-group">
+        <input type="text" id="input-code" class="code-input" placeholder="A10D9X" maxlength="6"
+          oninput="Student.onCodeInput(this)" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+        <button class="btn-primary" id="btn-verify-code" onclick="Student.verifyCode()">Verify</button>
+      </div>
+      <div class="field-hint">Enter the 6-character code shared by your teacher</div>
+    </div>
+
+    <!-- Identity fields -->
+    <div class="form-card" id="card-identity" style="display:none">
+      <label class="field-label">Your Details</label>
+      <input type="text" id="input-name" class="field-input" placeholder="Full Name" autocomplete="name" />
+      <input type="text" id="input-roll" class="field-input" placeholder="Roll Number" autocomplete="off" autocapitalize="characters" />
+      <input type="tel" id="input-mobile" class="field-input" placeholder="Mobile Number (optional)" autocomplete="tel" />
+    </div>
+
+    <!-- Permission status -->
+    <div class="perm-row" id="perm-row" style="display:none">
+      <div class="perm-item" id="perm-gps">
+        <div class="perm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </div>
+        <div class="perm-info">
+          <div class="perm-name">GPS Location</div>
+          <div class="perm-status" id="gps-status-text">Requesting…</div>
+        </div>
+        <div class="perm-badge pending" id="gps-badge">•••</div>
+      </div>
+      <div class="perm-item" id="perm-cam">
+        <div class="perm-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </div>
+        <div class="perm-info">
+          <div class="perm-name">Camera</div>
+          <div class="perm-status" id="cam-status-text">Requesting…</div>
+        </div>
+        <div class="perm-badge pending" id="cam-badge">•••</div>
+      </div>
+    </div>
+
+    <!-- Camera preview (proof of presence only — not recorded) -->
+    <div id="camera-preview-wrap" style="display:none">
+      <div class="camera-card">
+        <video id="camera-feed" autoplay muted playsinline></video>
+        <div class="camera-overlay">
+          <div class="camera-notice">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Not recorded · Presence only
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit button -->
+    <button class="btn-primary btn-full btn-xl" id="btn-submit" style="display:none" onclick="Student.submit()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+      Mark Present
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SUCCESS SCREEN ════════════════════════════════ -->
+<div id="screen-student-success" class="screen">
+  <div class="success-body">
+    <div class="success-icon-wrap">
+      <div class="success-ring"></div>
+      <svg class="success-check" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2 class="success-title">Attendance Marked</h2>
+    <p class="success-sub">Your presence has been recorded for this session.</p>
+    <div class="success-detail" id="success-detail"></div>
+    <div class="ephemeral-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Data will be purged when the teacher ends the session
+    </div>
+    <button class="btn-outline btn-full" onclick="App.goTo('landing')" style="margin-top:2rem">Back to Home</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ END SESSION CONFIRM ═══════════════════════════════ -->
+<div id="modal-end-confirm" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-icon danger">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E5001A" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3 class="modal-title">End Session?</h3>
+    <p class="modal-body">This will immediately purge <strong>all attendance data</strong>, GPS records, and student information. This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="Teacher.closeEndModal()">Cancel</button>
+      <button class="btn-danger" onclick="Teacher.confirmEnd()">Purge &amp; End</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ADD STUDENT MODAL ════════════════════════════════ -->
+<div id="modal-add-student" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <h3 class="modal-title">Add Student Manually</h3>
+    <input type="text" id="manual-name" class="field-input" placeholder="Full Name" />
+    <input type="text" id="manual-roll" class="field-input" placeholder="Roll Number" />
+    <input type="tel" id="manual-mobile" class="field-input" placeholder="Mobile (optional)" />
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="Teacher.closeAddModal()">Cancel</button>
+      <button class="btn-primary" onclick="Teacher.addStudentManually()">Add Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
