@@ -12,8 +12,28 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1.js"
+      "src": "/api/get-attendance",
+      "dest": "/api/get-attendance.js"
+    },
+    {
+      "src": "/api/start-session",
+      "dest": "/api/start-session.js"
+    },
+    {
+      "src": "/api/join-session",
+      "dest": "/api/join-session.js"
+    },
+    {
+      "src": "/api/end-session",
+      "dest": "/api/end-session.js"
+    },
+    {
+      "src": "/api/remove-student",
+      "dest": "/api/remove-student.js"
+    },
+    {
+      "src": "/api/add-student",
+      "dest": "/api/add-student.js"
     },
     {
       "src": "/(.*)",
