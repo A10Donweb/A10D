@@ -7,14 +7,18 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { code, studentId } = req.body || {};
-  if (!code || !studentId) return res.status(400).json({ error: 'Missing code or studentId' });
+  try {
+    const { code, studentId } = req.body || {};
+    if (!code || !studentId) return res.status(400).json({ error: 'Missing code or studentId' });
 
-  const raw = await redis('get', `session:${code.toUpperCase()}`);
-  if (!raw) return res.status(404).json({ error: 'Session not found' });
+    const raw = await redis('GET', `session:${code.toUpperCase()}`);
+    if (!raw) return res.status(404).json({ error: 'Session not found' });
 
-  const session = JSON.parse(raw);
-  session.students = session.students.filter(s => s.id !== studentId);
-  await redis('set', `session:${code.toUpperCase()}`, JSON.stringify(session), 'EX', '1800');
-  return res.status(200).json({ success: true });
+    const session = JSON.parse(raw);
+    session.students = session.students.filter(s => s.id !== studentId);
+    await redis('SET', `session:${code.toUpperCase()}`, JSON.stringify(session), 'EX', 1800);
+    return res.status(200).json({ success: true });
+  } catch(e) {
+    return res.status(500).json({ error: e.message });
+  }
 };
