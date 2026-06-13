@@ -1,20 +1,24 @@
+const { redis } = require('./_store');
+
+const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const UPSTASH_URL = process.env.https://huge-oyster-114646.upstash.io;
-    const UPSTASH_TOKEN = process.env.gQAAAAAAAb_WAAIgcDI2MTVkOWVjNjc5NDY0MTA4YTBmMDI1ZTg5NmU2NjUxMA;
-
-    const response = await fetch(`${UPSTASH_URL}/ping`, {
-      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-    });
-
-    const text = await response.text();
-    return res.status(200).json({ ping: text, url: UPSTASH_URL ? 'found' : 'missing', token: UPSTASH_TOKEN ? 'found' : 'missing' });
+    const code = Array.from({ length: 6 }, () => 
+      CHARS[Math.floor(Math.random() * CHARS.length)]
+    ).join('');
+    
+    const session = { code, createdAt: Date.now(), students: [] };
+    await redis('SET', `session:${code}`, JSON.stringify(session), 'EX', 1800);
+    
+    return res.status(200).json({ code, createdAt: session.createdAt });
   } catch(e) {
-    return res.status(200).json({ error: e.message, type: e.constructor.name });
+    return res.status(500).json({ error: e.message });
   }
 };
