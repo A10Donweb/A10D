@@ -7,29 +7,29 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { code, name, rollNumber, mobile } = req.body || {};
-  if (!code || !name || !rollNumber) return res.status(400).json({ error: 'Missing required fields' });
+  try {
+    const { code, name, rollNumber, mobile } = req.body || {};
+    if (!code || !name || !rollNumber) return res.status(400).json({ error: 'Missing required fields' });
 
-  const raw = await redis('get', `session:${code.toUpperCase()}`);
-  if (!raw) return res.status(404).json({ error: 'Session not found' });
+    const raw = await redis('GET', `session:${code.toUpperCase()}`);
+    if (!raw) return res.status(404).json({ error: 'Session not found' });
 
-  const session = JSON.parse(raw);
-  if (session.students.find(s => s.rollNumber.toLowerCase() === rollNumber.toLowerCase())) {
-    return res.status(409).json({ error: 'Roll number already exists' });
-  }
+    const session = JSON.parse(raw);
+    if (session.students.find(s => s.rollNumber.toLowerCase() === rollNumber.toLowerCase())) {
+      return res.status(409).json({ error: 'Roll number already exists' });
+    }
 
-  const entry = {
-    id: `manual-${Date.now()}`,
-    name: name.trim(),
-    rollNumber: rollNumber.trim().toUpperCase(),
-    mobile: mobile ? mobile.trim() : '—',
-    gps: null,
-    cameraStatus: 'Manual Entry',
-    timestamp: new Date().toISOString(),
-    manual: true,
-  };
+    const entry = {
+      id: `manual-${Date.now()}`,
+      name: name.trim(),
+      rollNumber: rollNumber.trim().toUpperCase(),
+      mobile: mobile ? mobile.trim() : '—',
+      gps: null,
+      cameraStatus: 'Manual Entry',
+      timestamp: new Date().toISOString(),
+      manual: true,
+    };
 
-  session.students.push(entry);
-  await redis('set', `session:${code.toUpperCase()}`, JSON.stringify(session), 'EX', '1800');
-  return res.status(200).json({ success: true, entry });
-};
+    session.students.push(entry);
+    await redis('SET', `session:${code.toUpperCase()}`, JSON.stringify(session), 'EX', 1800);
+    return res.status(200).json({
